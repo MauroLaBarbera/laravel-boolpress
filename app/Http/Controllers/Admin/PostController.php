@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use App\Post;
 
 class PostController extends Controller
@@ -27,7 +29,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.posts.create');
     }
 
     /**
@@ -38,7 +40,22 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // VALIDAZIONE
+        $request->validate([
+            'title' => 'required|unique:posts',
+            'content' => 'required',
+        ]);
+        $data = $request->all();
+
+        //gen slug
+        $data['slug'] = Str::slug($data['title'], '-');
+
+        //Create and Save Record on db
+        $new_post = new Post();
+        $new_post->fill($data); //FILLABLE!
+        $new_post->Save();
+
+        return redirect()->route('admin.posts.show', $new_post->id);
     }
 
     /**
@@ -65,7 +82,12 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post = Post::find($id);
+
+        if(! $post) {
+            abort(404);
+        }
+        return view('admin.posts.edit', compact('post'));
     }
 
     /**
@@ -77,7 +99,27 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        //VALIDE
+         $request->validate([
+            'title' => [
+                'required',
+                Rule::unique('posts')->ignore($id),
+                'max:50',
+            ],
+            'content' => 'required',
+        ]);
+        $data = $request->all();
+
+        $post = Post::find($id);
+
+        //GEN SLUG SOLO SE DIVERTO DAL PRECEDENTE
+        if($data['title'] != $post->title) {
+            $data['slug'] = Str::slug($data['title'], '-');
+        }
+
+        $post->update($data);
+
+        return redirect()->route('admin.posts.show', $post->id);
     }
 
     /**
@@ -88,6 +130,9 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::find($id);
+        $post->delete();
+
+        return redirect()->route('admin.posts.index')->with('deleted',$post->title);
     }
 }

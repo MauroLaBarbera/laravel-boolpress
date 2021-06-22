@@ -1,11 +1,12 @@
 <template>
     <header>
-        <a href="">BoolPress</a>
-
         <nav>
             <ul>
                 <li>
-                    <a href="">Blog</a>
+                    <a href="/">BoolPress</a>
+                </li>
+                <li>
+                    <a href="/home">Blog</a>
                 </li>
                 <li>
                     <a href="">About</a>
@@ -22,4 +23,11 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+ul {
+    display: flex;
+    li {
+        list-style: none;
+    }
+}
+</style>
