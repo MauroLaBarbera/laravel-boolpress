@@ -30,7 +30,9 @@
                     </div>
                     <div class="mb-3">
                         <label for="content" class="form-label">Content*</label>
-                        <textarea class="form-control @error('content') is-invalid @enderror"" name="content" id="content" rows="10" placeholder="Insert your content">{{ old('content') }}</textarea>
+                        <textarea class="form-control @error('content') is-invalid @enderror"
+                         name="content" id="content" rows="10" placeholder="Insert your content">{{ old('content') }}</textarea>
+
                         @error('content')
                             <div class="text-danger">
                                 {{ $message }}
@@ -38,9 +40,25 @@
                         @enderror
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Create Post
-                    </button>
+                    <div class="mb-3">
+                        <label for="category_id">Category</label>
+                        <select class="form-control @error('category_id') is-invalid @enderror" 
+                        name="category_id" id="category_id">
+                            <option value="">-- Select Category --</option>
+                            @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                @if($category->id == old('category_id')) selected @endif
+                            >
+                                {{ $category->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('category_id')
+                            <div class="text-danger">{{ $message }} </div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"> Create Post </button>
                 </form>
             </div>
         </div>
