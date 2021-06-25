@@ -30,7 +30,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="content" class="form-label">Content*</label>
-                        <textarea class="form-control @error('content') is-invalid @enderror"" name="content" id="content" rows="10" placeholder="Insert your content">{{ old('content',$post->content) }}</textarea>
+                        <textarea class="form-control @error('content') is-invalid @enderror""
+                         name="content" id="content" rows="10" placeholder="Insert your content">
+                         {{ old('content',$post->content) }}
+                        </textarea>
+
                         @error('content')
                             <div class="text-danger">
                                 {{ $message }}
@@ -52,6 +56,29 @@
                             @endforeach
                         </select>
                         @error('category_id')
+                            <div class="text-danger">{{ $message }} </div>
+                        @enderror
+                    </div>
+
+                     {{-- TAGS --}}
+                    <h4>Tags</h4>
+                    <div class="mb-3">
+                        @foreach ($tags as $tag)
+                            <span class="d-inline-block mr-3">
+                                <input type="checkbox" name="tags[]" id="tag{{ $loop->iteration }}"
+                                    value="{{ $tag->id }}" 
+                                    @if ($errors->any() && in_array($tag->id, old('tags')))
+                                         checked 
+                                    @elseif (! $errors->any() && $post->tags->contains($tag->id))
+                                        checked
+                                    @endif
+                                >
+                                <label for="tag{{ $loop->iteration }}">
+                                    {{ $tag->name}}
+                                </label>
+                            </span>
+                        @endforeach
+                        @error('tags')
                             <div class="text-danger">{{ $message }} </div>
                         @enderror
                     </div>

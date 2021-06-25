@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Post;
 use App\Category;
+use App\Tag;
 
 class PostController extends Controller
 {
@@ -32,8 +33,10 @@ class PostController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $tags = Tag::all();
 
-        return view('admin.posts.create', compact('categories'));
+
+        return view('admin.posts.create', compact('categories','tags'));
     }
 
     /**
@@ -49,6 +52,7 @@ class PostController extends Controller
             'title' => 'required|unique:posts',
             'content' => 'required',
             'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id',
         ]);
         $data = $request->all();
 
@@ -59,6 +63,12 @@ class PostController extends Controller
         $new_post = new Post();
         $new_post->fill($data); //FILLABLE!
         $new_post->Save();
+
+        //SALVA RELAZIONE CON TAGS IN TABELLA PIVOT
+        if(array_key_exists('tags', $data)) {
+            $new_post->tags()->attach($data['tags']); //aggiunge nuovi record nella tabella pivot
+        }
+
 
         return redirect()->route('admin.posts.show', $new_post->id);
     }
@@ -89,11 +99,12 @@ class PostController extends Controller
     {
         $post = Post::find($id);
         $categories = Category::all();
+        $tags = Tag::all();
 
         if(! $post) {
             abort(404);
         }
-        return view('admin.posts.edit', compact('post','categories'));
+        return view('admin.posts.edit', compact('post','categories', 'tags'));
     }
 
     /**
@@ -114,6 +125,7 @@ class PostController extends Controller
             ],
             'content' => 'required',
             'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id',
         ]);
         $data = $request->all();
 
@@ -125,6 +137,14 @@ class PostController extends Controller
         }
 
         $post->update($data);
+
+        //Aggiornare Relazione tabella pivot
+        if(array_key_exists('tags', $data)) {
+            //aggiungere record tabella pivot
+            $post->tags()->sync($data['tags']); //add or remove update
+        } else {
+            $post->tags()->detach(); // remove records in pivot
+        }
 
         return redirect()->route('admin.posts.show', $post->id);
     }
@@ -138,6 +158,11 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
+
+        //clear orphans from tab pivot
+        $post->tags()->detach();
+
+        //remove
         $post->delete();
 
         return redirect()->route('admin.posts.index')->with('deleted',$post->title);
