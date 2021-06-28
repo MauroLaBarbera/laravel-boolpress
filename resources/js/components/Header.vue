@@ -28,6 +28,7 @@ ul {
     display: flex;
     li {
         list-style: none;
+        margin-right: 15px;
     }
 }
 </style>
